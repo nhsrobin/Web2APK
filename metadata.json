@@ -1,0 +1,6 @@
+{
+  "name": "WebToAPK Studio - Fast Web to APK Converter",
+  "description": "Convert any website or web application into an ultra-lightweight, high-performance native Android APK with custom icons, splash screens, offline fallback, and live device preview.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
