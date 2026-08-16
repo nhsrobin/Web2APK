@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   RotateCw,
   Wifi,
@@ -37,6 +37,26 @@ export const DeviceSimulator: React.FC<DeviceSimulatorProps> = ({
   const [currentTime, setCurrentTime] = useState('9:41');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
+
+  // Dynamically calculate realistic package size based on real active assets, icons & features
+  const estimatedSizeKb = useMemo(() => {
+    let bytes = 248 * 1024; // Base native Java/Kotlin WebView engine binary
+    if (config.icon.customDataUrl) {
+      bytes += Math.round(config.icon.customDataUrl.length * 0.75);
+    } else {
+      bytes += 32 * 1024; // Multi-density adaptive icon mipmaps
+    }
+    if (config.splash.enabled) {
+      bytes += 16 * 1024; // Native splash vector & layout resources
+    }
+    if (config.offline.enabled) {
+      bytes += 14 * 1024; // Offline cache handler & embedded fallback assets
+    }
+    if (config.permissions.camera || config.permissions.geolocation || config.permissions.recordAudio) {
+      bytes += 8 * 1024; // Additional hardware bridge classes
+    }
+    return (bytes / 1024).toFixed(1);
+  }, [config]);
 
   // Update status bar clock
   useEffect(() => {
@@ -355,16 +375,19 @@ export const DeviceSimulator: React.FC<DeviceSimulatorProps> = ({
         </div>
       </div>
 
-      {/* Device Specs Pill */}
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-[11px] text-slate-400 font-mono">
-        <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800">
-          APK Size: ~240 KB
+      {/* Dynamic Device & Package Specs Pill */}
+      <div className="mt-3.5 flex flex-wrap items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-slate-400 font-mono">
+        <span className="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-800 text-cyan-300">
+          Est. Size: ~{estimatedSizeKb} KB
         </span>
-        <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800">
+        <span className="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-800 text-slate-300">
           Min API: {config.build.minSdkVersion}
         </span>
-        <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800">
+        <span className="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-800 text-slate-300">
           Target API: {config.build.targetSdkVersion}
+        </span>
+        <span className="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-800 text-emerald-400">
+          v{config.versionName}
         </span>
       </div>
     </div>

@@ -107,25 +107,25 @@ export const IconSection: React.FC<IconSectionProps> = ({ config, onChange }) =>
   };
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-5 shadow-xl shadow-black/20">
-      <div className="flex items-center gap-2.5 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-          <ImageIcon className="w-4 h-4" />
+    <div className="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-3.5 sm:p-4 shadow-xl shadow-black/20">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+          <ImageIcon className="w-3.5 h-3.5" />
         </div>
         <div>
-          <h2 className="font-semibold text-slate-100 text-sm sm:text-base">
+          <h2 className="font-semibold text-slate-100 text-sm">
             App Launcher Icon Studio
           </h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-[11px] text-slate-400">
             Design launcher icons with adaptive shapes & multi-density mipmaps
           </p>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6 items-start">
+      <div className="flex flex-col sm:flex-row gap-3.5 sm:gap-4 items-start">
         {/* Left: Live Icon Preview */}
-        <div className="flex flex-col items-center justify-center p-4 bg-slate-950/80 border border-slate-800 rounded-2xl w-full md:w-48 shrink-0">
-          <span className="text-[11px] font-medium text-slate-400 mb-2.5">
+        <div className="flex flex-col items-center justify-center p-3 bg-slate-950/80 border border-slate-800 rounded-2xl w-full sm:w-36 shrink-0">
+          <span className="text-[10px] font-medium text-slate-400 mb-2">
             Launcher Preview
           </span>
           <div className="relative group">
@@ -133,36 +133,36 @@ export const IconSection: React.FC<IconSectionProps> = ({ config, onChange }) =>
               <img
                 src={previewUrl}
                 alt="App Icon Preview"
-                className="w-24 h-24 shadow-2xl transition-transform transform group-hover:scale-105"
+                className="w-18 h-18 sm:w-20 sm:h-20 shadow-2xl transition-transform transform group-hover:scale-105"
               />
             ) : (
-              <div className="w-24 h-24 rounded-2xl bg-slate-800 animate-pulse" />
+              <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-slate-800 animate-pulse" />
             )}
-            <div className="absolute -bottom-2 -right-2 px-1.5 py-0.5 rounded bg-blue-500/90 text-white text-[9px] font-mono shadow-sm">
+            <div className="absolute -bottom-1 -right-1 px-1 py-0.2 rounded bg-blue-500/90 text-white text-[8px] font-mono shadow-sm">
               512px
             </div>
           </div>
-          <span className="text-xs text-slate-300 font-semibold mt-3 truncate max-w-[120px]">
+          <span className="text-[11px] text-slate-300 font-semibold mt-2 truncate max-w-[110px]">
             {config.name || 'App Icon'}
           </span>
-          <span className="text-[10px] text-slate-500 font-mono mt-0.5">
+          <span className="text-[9px] text-slate-500 font-mono mt-0.5">
             mipmap-xxxhdpi
           </span>
         </div>
 
         {/* Right: Icon Controls */}
-        <div className="flex-1 w-full space-y-4">
+        <div className="flex-1 w-full space-y-3">
           {/* Custom Upload or Preset toggle */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-medium text-slate-300">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-[11px] sm:text-xs font-medium text-slate-300">
                 Icon Graphic Source
               </label>
               {config.icon.customDataUrl && (
                 <button
                   type="button"
                   onClick={handleClearCustomImage}
-                  className="text-xs text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
+                  className="text-[11px] text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
                 >
                   <RefreshCw className="w-3 h-3" />
                   <span>Use Preset Glyphs</span>
@@ -182,13 +182,13 @@ export const IconSection: React.FC<IconSectionProps> = ({ config, onChange }) =>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
                   config.icon.customDataUrl
                     ? 'bg-blue-500/10 border-blue-500/30 text-blue-300'
                     : 'bg-slate-950 hover:bg-slate-800 border-slate-700/70 text-slate-300'
                 }`}
               >
-                <Upload className="w-4 h-4" />
+                <Upload className="w-3.5 h-3.5" />
                 <span>
                   {config.icon.customDataUrl
                     ? 'Custom Image Loaded'

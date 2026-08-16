@@ -72,17 +72,17 @@ export const CustomizationSection: React.FC<CustomizationSectionProps> = ({
   };
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-5 shadow-xl shadow-black/20">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-            <Sliders className="w-4 h-4" />
+    <div className="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-3.5 sm:p-4 shadow-xl shadow-black/20">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+            <Sliders className="w-3.5 h-3.5" />
           </div>
           <div>
-            <h2 className="font-semibold text-slate-100 text-sm sm:text-base">
+            <h2 className="font-semibold text-slate-100 text-sm">
               App Customization & Hardware
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-[11px] text-slate-400">
               Configure display modes, gestures, native hardware permissions & offline caching
             </p>
           </div>
@@ -90,11 +90,11 @@ export const CustomizationSection: React.FC<CustomizationSectionProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-800 mb-4 overflow-x-auto scrollbar-none gap-1">
+      <div className="flex border-b border-slate-800 mb-3 overflow-x-auto scrollbar-none gap-1">
         <button
           type="button"
           onClick={() => setActiveTab('ui')}
-          className={`px-3.5 py-2 text-xs font-semibold border-b-2 whitespace-nowrap transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold border-b-2 whitespace-nowrap transition-all ${
             activeTab === 'ui'
               ? 'border-cyan-400 text-cyan-300'
               : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -105,7 +105,7 @@ export const CustomizationSection: React.FC<CustomizationSectionProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('permissions')}
-          className={`px-3.5 py-2 text-xs font-semibold border-b-2 whitespace-nowrap transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold border-b-2 whitespace-nowrap transition-all ${
             activeTab === 'permissions'
               ? 'border-cyan-400 text-cyan-300'
               : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -116,7 +116,7 @@ export const CustomizationSection: React.FC<CustomizationSectionProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('offline')}
-          className={`px-3.5 py-2 text-xs font-semibold border-b-2 whitespace-nowrap transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold border-b-2 whitespace-nowrap transition-all ${
             activeTab === 'offline'
               ? 'border-cyan-400 text-cyan-300'
               : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -127,7 +127,7 @@ export const CustomizationSection: React.FC<CustomizationSectionProps> = ({
         <button
           type="button"
           onClick={() => setActiveTab('advanced')}
-          className={`px-3.5 py-2 text-xs font-semibold border-b-2 whitespace-nowrap transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold border-b-2 whitespace-nowrap transition-all ${
             activeTab === 'advanced'
               ? 'border-cyan-400 text-cyan-300'
               : 'border-transparent text-slate-400 hover:text-slate-200'
