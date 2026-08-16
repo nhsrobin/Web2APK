@@ -165,12 +165,12 @@ export const DeviceSimulator: React.FC<DeviceSimulatorProps> = ({
 
       {/* Realistic Mobile Device Frame */}
       <div
-        className={`relative transition-all duration-300 ease-in-out shadow-2xl shadow-blue-500/10 rounded-[44px] p-3 bg-gradient-to-b from-slate-800 via-slate-900 to-slate-950 border-4 border-slate-700/80 ring-1 ring-white/10 ${
-          isLandscape ? 'w-[640px] h-[340px]' : 'w-[320px] sm:w-[350px] h-[660px]'
+        className={`relative transition-all duration-300 ease-in-out shadow-2xl shadow-blue-500/10 rounded-[36px] sm:rounded-[44px] p-2.5 sm:p-3 bg-gradient-to-b from-slate-800 via-slate-900 to-slate-950 border-4 border-slate-700/80 ring-1 ring-white/10 ${
+          isLandscape ? 'w-full max-w-[600px] h-[320px]' : 'w-[290px] min-[380px]:w-[320px] sm:w-[350px] h-[580px] sm:h-[660px]'
         }`}
       >
         {/* Outer Phone Shell */}
-        <div className="relative w-full h-full bg-slate-950 rounded-[34px] overflow-hidden flex flex-col border border-slate-800">
+        <div className="relative w-full h-full bg-slate-950 rounded-[28px] sm:rounded-[34px] overflow-hidden flex flex-col border border-slate-800">
           {/* Dynamic Island / Notch */}
           <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-4 bg-black rounded-full z-30 flex items-center justify-between px-3">
             <div className="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-800" />

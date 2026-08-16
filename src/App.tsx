@@ -95,33 +95,33 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
         {/* Hero Banner with Feature Highlights */}
-        <div className="mb-6 sm:mb-8 p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-blue-950/40 via-indigo-950/30 to-slate-900 border border-blue-500/20 relative overflow-hidden shadow-xl">
+        <div className="mb-4 sm:mb-6 p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-blue-950/40 via-indigo-950/30 to-slate-900 border border-blue-500/20 relative overflow-hidden shadow-xl">
           <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-2.5">
-                <Zap className="w-3.5 h-3.5" />
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-semibold mb-1.5">
+                <Zap className="w-3 h-3" />
                 <span>Standalone Native Android App Studio</span>
               </div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
                 Turn any URL into a Dedicated Android Application
               </h1>
-              <p className="text-xs sm:text-sm text-slate-400 max-w-2xl mt-1.5 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-400 max-w-2xl mt-1 leading-relaxed">
                 Package any web application into a complete standalone Android app with native in-app browser engine, full-screen video player, camera/gallery uploads, custom splash screens, offline fallback, and hardware GPU acceleration.
               </p>
             </div>
 
             {/* Quick Feature Badges */}
-            <div className="flex flex-wrap md:flex-col gap-2 shrink-0">
-              <div className="flex items-center gap-2 text-xs text-slate-300 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="flex flex-wrap md:flex-col gap-1.5 sm:gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-300 bg-slate-900/80 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-slate-800">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 <span>Standalone In-App Engine</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-300 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800">
-                <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
+              <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-300 bg-slate-900/80 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-slate-800">
+                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                 <span>Android 14 (API 34) Ready</span>
               </div>
             </div>
@@ -129,9 +129,9 @@ export default function App() {
         </div>
 
         {/* Two-Column App Builder Workspace */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
           {/* Left Column: Configuration Forms (7 cols on lg) */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-4 sm:space-y-5">
             {/* 1. Target URL & Auto-Analyzer */}
             <UrlInputSection
               config={config}
@@ -166,12 +166,12 @@ export default function App() {
             />
 
             {/* Bottom Generate Banner for Easy Access */}
-            <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-900/40 via-indigo-900/30 to-slate-900 border border-blue-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-900/40 via-indigo-900/30 to-slate-900 border border-blue-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
               <div>
-                <h3 className="font-bold text-white text-base">
+                <h3 className="font-bold text-white text-sm sm:text-base">
                   Ready to compile {config.name}?
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
                   Generates direct `.apk` binary, Android Studio project & iOS WebClip
                 </p>
               </div>
@@ -179,7 +179,7 @@ export default function App() {
               <button
                 id="btn-bottom-build"
                 onClick={() => setIsBuildModalOpen(true)}
-                className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+                className="w-full sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
               >
                 <Download className="w-4 h-4" />
                 <span>Build & Download APK</span>
@@ -188,16 +188,16 @@ export default function App() {
           </div>
 
           {/* Right Column: Interactive Live Device Simulator (5 cols on lg) */}
-          <div className="lg:col-span-5 lg:sticky lg:top-20 space-y-4">
-            <div className="bg-slate-900/80 border border-slate-800/80 rounded-3xl p-5 shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
+          <div className="lg:col-span-5 lg:sticky lg:top-20 space-y-3 sm:space-y-4">
+            <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-2xl">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <div className="flex items-center gap-2">
                   <Smartphone className="w-4 h-4 text-blue-400" />
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
                     Live Device Simulator
                   </span>
                 </div>
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
+                <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
                   Interactive Preview
                 </span>
               </div>
@@ -211,11 +211,11 @@ export default function App() {
               />
 
               {/* Primary Action Button under Phone */}
-              <div className="mt-5 pt-4 border-t border-slate-800/80">
+              <div className="mt-3.5 sm:mt-5 pt-3 sm:pt-4 border-t border-slate-800/80">
                 <button
                   id="btn-sidebar-generate"
                   onClick={() => setIsBuildModalOpen(true)}
-                  className="w-full py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:via-indigo-500 hover:to-blue-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2 group"
+                  className="w-full py-3 sm:py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:via-indigo-500 hover:to-blue-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-blue-600/25 transition-all flex items-center justify-center gap-2 group"
                 >
                   <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
                   <span>Generate & Download APK</span>

@@ -254,7 +254,9 @@ export const BuildModal: React.FC<BuildModalProps> = ({
                       </span>
                       <span className="text-xs text-slate-400">•</span>
                       <span className="text-xs text-slate-400 font-mono">
-                        {(apkSizeBytes / 1024).toFixed(1)} KB (Ultra Light)
+                        {apkSizeBytes > 1024 * 1024
+                          ? `${(apkSizeBytes / (1024 * 1024)).toFixed(2)} MB`
+                          : `${(apkSizeBytes / 1024).toFixed(1)} KB`}
                       </span>
                     </div>
                   </div>

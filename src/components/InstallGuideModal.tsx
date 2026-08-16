@@ -90,6 +90,12 @@ export const InstallGuideModal: React.FC<InstallGuideModalProps> = ({
             <span className="font-semibold block mb-1">Google Play Protect Notice:</span>
             Because self-compiled APKs are signed with a developer test certificate, Play Protect might show "Unrecognized app". Simply tap <strong>"More Details" &gt; "Install anyway"</strong>.
           </div>
+
+          {/* Parsing Issue Troubleshooting */}
+          <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-200">
+            <span className="font-semibold block mb-1">Seeing "Problem parsing the package"?</span>
+            If your Android OS version rejects client-generated bundles, download the <strong>Android Studio Source (.zip)</strong> to compile directly in Android Studio, or trigger the <strong>GitHub Actions</strong> workflow to get a 100% verified release APK compiled with the official Android SDK toolchain.
+          </div>
         </div>
 
         {/* Footer */}
