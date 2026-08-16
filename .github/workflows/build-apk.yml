@@ -1,0 +1,375 @@
+name: Build and Release Standalone Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: 'Application Name'
+        required: true
+        default: 'My Web App'
+      target_url:
+        description: 'Target Web URL'
+        required: true
+        default: 'https://example.com'
+      package_name:
+        description: 'Android Package ID (e.g. com.company.app)'
+        required: true
+        default: 'com.webapp.app'
+      theme_color:
+        description: 'Theme Color Hex'
+        required: false
+        default: '#3B82F6'
+      version_name:
+        description: 'Version Name'
+        required: false
+        default: '1.0.0'
+  repository_dispatch:
+    types: [build-apk]
+
+jobs:
+  build:
+    name: Build Signed Android APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Extract Build Parameters
+        id: params
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "APP_NAME=${{ github.event.client_payload.appName }}" >> $GITHUB_ENV
+            echo "TARGET_URL=${{ github.event.client_payload.targetUrl }}" >> $GITHUB_ENV
+            echo "PACKAGE_NAME=${{ github.event.client_payload.packageName }}" >> $GITHUB_ENV
+            echo "THEME_COLOR=${{ github.event.client_payload.themeColor }}" >> $GITHUB_ENV
+            echo "VERSION_NAME=${{ github.event.client_payload.versionName }}" >> $GITHUB_ENV
+          else
+            echo "APP_NAME=${{ github.event.inputs.app_name }}" >> $GITHUB_ENV
+            echo "TARGET_URL=${{ github.event.inputs.target_url }}" >> $GITHUB_ENV
+            echo "PACKAGE_NAME=${{ github.event.inputs.package_name }}" >> $GITHUB_ENV
+            echo "THEME_COLOR=${{ github.event.inputs.theme_color }}" >> $GITHUB_ENV
+            echo "VERSION_NAME=${{ github.event.inputs.version_name }}" >> $GITHUB_ENV
+          fi
+
+      - name: Generate Android Native WebView Source Code
+        run: |
+          mkdir -p android-project/app/src/main/java/$(echo "${PACKAGE_NAME}" | tr '.' '/')
+          mkdir -p android-project/app/src/main/res/values
+          mkdir -p android-project/app/src/main/res/mipmap-xxhdpi
+          mkdir -p android-project/app/src/main/res/layout
+
+          # 1. Root settings.gradle
+          cat << 'EOF' > android-project/settings.gradle
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "WebToApkApp"
+          include ':app'
+          EOF
+
+          # 2. Root build.gradle
+          cat << 'EOF' > android-project/build.gradle
+          plugins {
+              id 'com.android.application' version '8.2.2' apply false
+              id 'org.jetbrains.kotlin.android' version '1.9.22' apply false
+          }
+          EOF
+
+          # 3. App build.gradle
+          cat << EOF > android-project/app/build.gradle
+          plugins {
+              id 'com.android.application'
+              id 'org.jetbrains.kotlin.android'
+          }
+
+          android {
+              namespace "${PACKAGE_NAME}"
+              compileSdk 34
+
+              defaultConfig {
+                  applicationId "${PACKAGE_NAME}"
+                  minSdk 21
+                  targetSdk 34
+                  versionCode 1
+                  versionName "${VERSION_NAME}"
+                  testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+              }
+
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                  }
+                  debug {
+                      applicationIdSuffix ""
+                      debuggable true
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = '17'
+              }
+          }
+
+          dependencies {
+              implementation 'androidx.core:core-ktx:1.12.0'
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'com.google.android.material:material:1.11.0'
+              implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+              implementation 'androidx.webkit:webkit:1.10.0'
+          }
+          EOF
+
+          # 4. AndroidManifest.xml
+          cat << EOF > android-project/app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <uses-permission android:name="android.permission.CAMERA" />
+              <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+              <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
+              <application
+                  android:allowBackup="true"
+                  android:icon="@mipmap/ic_launcher"
+                  android:label="${APP_NAME}"
+                  android:roundIcon="@mipmap/ic_launcher"
+                  android:supportsRtl="true"
+                  android:theme="@style/Theme.WebToApk"
+                  android:usesCleartextTraffic="true"
+                  android:hardwareAccelerated="true">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize"
+                      android:theme="@style/Theme.WebToApk">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          # 5. MainActivity.kt
+          PKG_PATH="android-project/app/src/main/java/$(echo "${PACKAGE_NAME}" | tr '.' '/')"
+          cat << EOF > ${PKG_PATH}/MainActivity.kt
+          package ${PACKAGE_NAME}
+
+          import android.annotation.SuppressLint
+          import android.content.Intent
+          import android.graphics.Bitmap
+          import android.net.Uri
+          import android.os.Bundle
+          import android.view.View
+          import android.webkit.*
+          import android.widget.ProgressBar
+          import androidx.appcompat.app.AppCompatActivity
+          import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+
+          class MainActivity : AppCompatActivity() {
+              private lateinit var webView: WebView
+              private lateinit var progressBar: ProgressBar
+              private lateinit var swipeRefresh: SwipeRefreshLayout
+              private var fileUploadCallback: ValueCallback<Array<Uri>>? = null
+
+              @SuppressLint("SetJavaScriptEnabled")
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  setContentView(R.layout.activity_main)
+
+                  webView = findViewById(R.id.webView)
+                  progressBar = findViewById(R.id.progressBar)
+                  swipeRefresh = findViewById(R.id.swipeRefresh)
+
+                  webView.settings.apply {
+                      javaScriptEnabled = true
+                      domStorageEnabled = true
+                      databaseEnabled = true
+                      allowFileAccess = true
+                      allowContentAccess = true
+                      useWideViewPort = true
+                      loadWithOverviewMode = true
+                      builtInZoomControls = false
+                      displayZoomControls = false
+                      setSupportZoom(false)
+                      userAgentString = userAgentString + " Web2APK-MobileNative"
+                  }
+
+                  CookieManager.getInstance().setAcceptCookie(true)
+                  CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true)
+
+                  swipeRefresh.setOnRefreshListener {
+                      webView.reload()
+                  }
+
+                  webView.webViewClient = object : WebViewClient() {
+                      override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                          progressBar.visibility = View.VISIBLE
+                      }
+
+                      override fun onPageFinished(view: WebView?, url: String?) {
+                          progressBar.visibility = View.GONE
+                          swipeRefresh.isRefreshing = false
+                      }
+
+                      override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                          val url = request?.url.toString()
+                          if (url.startsWith("http://") || url.startsWith("https://")) {
+                              return false
+                          }
+                          try {
+                              val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                              startActivity(intent)
+                              return true
+                          } catch (e: Exception) {
+                              return true
+                          }
+                      }
+                  }
+
+                  webView.webChromeClient = object : WebChromeClient() {
+                      override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                          progressBar.progress = newProgress
+                          if (newProgress == 100) {
+                              progressBar.visibility = View.GONE
+                          }
+                      }
+
+                      override fun onShowFileChooser(
+                          webView: WebView?,
+                          filePathCallback: ValueCallback<Array<Uri>>?,
+                          fileChooserParams: FileChooserParams?
+                      ): Boolean {
+                          fileUploadCallback?.onReceiveValue(null)
+                          fileUploadCallback = filePathCallback
+                          val intent = fileChooserParams?.createIntent()
+                          try {
+                              startActivityForResult(intent!!, 1001)
+                          } catch (e: Exception) {
+                              fileUploadCallback = null
+                              return false
+                          }
+                          return true
+                      }
+                  }
+
+                  webView.loadUrl("${TARGET_URL}")
+              }
+
+              override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+                  super.onActivityResult(requestCode, resultCode, data)
+                  if (requestCode == 1001) {
+                      fileUploadCallback?.onReceiveValue(
+                          WebChromeClient.FileChooserParams.parseResult(resultCode, data)
+                      )
+                      fileUploadCallback = null
+                  }
+              }
+
+              override fun onBackPressed() {
+                  if (webView.canGoBack()) {
+                      webView.goBack()
+                  } else {
+                      super.onBackPressed()
+                  }
+              }
+          }
+          EOF
+
+          # 6. Layout activity_main.xml
+          cat << 'EOF' > android-project/app/src/main/res/layout/activity_main.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+              <ProgressBar
+                  android:id="@+id/progressBar"
+                  style="?android:attr/progressBarStyleHorizontal"
+                  android:layout_width="match_parent"
+                  android:layout_height="3dp"
+                  android:indeterminate="false"
+                  android:max="100"
+                  android:visibility="gone"
+                  app:layout_constraintTop_toTopOf="parent" />
+
+              <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                  android:id="@+id/swipeRefresh"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  app:layout_constraintTop_toBottomOf="@id/progressBar"
+                  app:layout_constraintBottom_toBottomOf="parent">
+
+                  <WebView
+                      android:id="@+id/webView"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent" />
+              </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+          </androidx.constraintlayout.widget.ConstraintLayout>
+          EOF
+
+          # 7. Styles theme
+          cat << EOF > android-project/app/src/main/res/values/themes.xml
+          <resources>
+              <style name="Theme.WebToApk" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+                  <item name="colorPrimary">${THEME_COLOR}</item>
+                  <item name="colorPrimaryVariant">${THEME_COLOR}</item>
+                  <item name="colorOnPrimary">#FFFFFF</item>
+                  <item name="android:statusBarColor">${THEME_COLOR}</item>
+                  <item name="android:navigationBarColor">#0F172A</item>
+              </style>
+          </resources>
+          EOF
+
+          # 8. Gradle Wrapper setup
+          cd android-project
+          gradle wrapper --gradle-version 8.4
+          chmod +x gradlew
+
+      - name: Build Debug & Release APK
+        run: |
+          cd android-project
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Archive Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: android-project/app/build/outputs/apk/debug/*.apk
+          retention-days: 14
