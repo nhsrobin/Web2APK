@@ -206,55 +206,206 @@ async function startServer() {
   });
 
   // API Route: Trigger Background Cloud Build (GitHub Actions / Google Cloud Build)
-  app.post("/api/trigger-cloud-build", async (req, res) => {
+  app.post("/api/github/dispatch", async (req, res) => {
     try {
-      const config = req.body;
-      if (!config || !config.url) {
-        return res.status(400).json({ error: "Missing configuration or URL" });
+      const { repo, token, config } = req.body || {};
+      const targetRepo = (repo || process.env.GITHUB_BUILD_REPO || "").trim();
+      const targetToken = (token || process.env.GITHUB_BUILD_TOKEN || "").trim();
+
+      if (!targetRepo) {
+        return res.status(400).json({
+          error: "GitHub Repository is required (e.g., username/repo)",
+        });
+      }
+      if (!targetToken) {
+        return res.status(400).json({
+          error: "GitHub Personal Access Token is required to trigger GitHub Actions",
+        });
       }
 
-      const githubToken = process.env.GITHUB_BUILD_TOKEN;
-      const githubRepo = process.env.GITHUB_BUILD_REPO;
+      if (!config || !config.url) {
+        return res.status(400).json({ error: "Missing app configuration or URL" });
+      }
 
-      if (githubToken && githubRepo) {
-        // Trigger GitHub Actions workflow dispatch via GitHub REST API
-        const dispatchRes = await fetch(`https://api.github.com/repos/${githubRepo}/dispatches`, {
+      // 1. Try workflow_dispatch first
+      const cleanAppName = (config.name || "WebApp").substring(0, 30);
+      const cleanUrl = config.url.startsWith("http") ? config.url : `https://${config.url}`;
+      
+      const payload = {
+        event_type: "build-apk",
+        client_payload: {
+          appName: cleanAppName,
+          targetUrl: cleanUrl,
+          packageName: config.packageName || "com.webapp.app",
+          themeColor: config.ui?.themeColor || "#3B82F6",
+          versionName: config.versionName || "1.0.0",
+          timestamp: new Date().toISOString(),
+        },
+      };
+
+      // Attempt repository_dispatch
+      const dispatchRes = await fetch(`https://api.github.com/repos/${targetRepo}/dispatches`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${targetToken}`,
+          Accept: "application/vnd.github.v3+json",
+          "Content-Type": "application/json",
+          "User-Agent": "WebToAPK-Studio-Backend",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (dispatchRes.status === 204 || dispatchRes.ok) {
+        return res.json({
+          success: true,
+          status: "dispatched",
+          message: "GitHub Actions workflow dispatched successfully! Compilation started on Ubuntu runner.",
+          repo: targetRepo,
+        });
+      }
+
+      // If repository dispatch had an issue, let's try workflow_dispatch on build-apk.yml
+      const wfDispatchRes = await fetch(
+        `https://api.github.com/repos/${targetRepo}/actions/workflows/build-apk.yml/dispatches`,
+        {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${githubToken}`,
+            Authorization: `Bearer ${targetToken}`,
             Accept: "application/vnd.github.v3+json",
             "Content-Type": "application/json",
             "User-Agent": "WebToAPK-Studio-Backend",
           },
           body: JSON.stringify({
-            event_type: "build-apk",
-            client_payload: {
-              appName: config.name,
-              targetUrl: config.url,
-              packageName: config.packageName,
+            ref: "main",
+            inputs: {
+              appName: cleanAppName,
+              targetUrl: cleanUrl,
+              packageName: config.packageName || "com.webapp.app",
               themeColor: config.ui?.themeColor || "#3B82F6",
-              versionName: config.versionName || "1.0.0",
-              timestamp: new Date().toISOString(),
             },
           }),
-        });
-
-        if (dispatchRes.ok) {
-          return res.json({
-            status: "dispatched",
-            message: "Background APK compilation started on GitHub Cloud Runner",
-            repo: githubRepo,
-          });
         }
+      );
+
+      if (wfDispatchRes.status === 204 || wfDispatchRes.ok) {
+        return res.json({
+          success: true,
+          status: "dispatched",
+          message: "GitHub Actions workflow_dispatch triggered successfully!",
+          repo: targetRepo,
+        });
       }
 
-      return res.json({
-        status: "ready",
-        message: "Direct client packaging ready",
+      const errorText = await dispatchRes.text();
+      return res.status(dispatchRes.status).json({
+        error: `GitHub API error (${dispatchRes.status})`,
+        message: errorText || "Failed to trigger GitHub Actions. Check repository permissions and token scope.",
       });
     } catch (err: any) {
       return res.status(500).json({
-        error: "Failed to trigger cloud build",
+        error: "Failed to trigger GitHub cloud build",
+        message: err?.message || String(err),
+      });
+    }
+  });
+
+  // API Route: Get latest GitHub Actions workflow runs
+  app.post("/api/github/runs", async (req, res) => {
+    try {
+      const { repo, token } = req.body || {};
+      const targetRepo = (repo || process.env.GITHUB_BUILD_REPO || "").trim();
+      const targetToken = (token || process.env.GITHUB_BUILD_TOKEN || "").trim();
+
+      if (!targetRepo) {
+        return res.status(400).json({ error: "GitHub Repository required" });
+      }
+
+      const headers: Record<string, string> = {
+        Accept: "application/vnd.github.v3+json",
+        "User-Agent": "WebToAPK-Studio-Backend",
+      };
+      if (targetToken) {
+        headers["Authorization"] = `Bearer ${targetToken}`;
+      }
+
+      const runsRes = await fetch(
+        `https://api.github.com/repos/${targetRepo}/actions/runs?per_page=5`,
+        { headers }
+      );
+
+      if (!runsRes.ok) {
+        const errText = await runsRes.text();
+        return res.status(runsRes.status).json({
+          error: "GitHub Actions runs fetch failed",
+          message: errText,
+        });
+      }
+
+      const data: any = await runsRes.json();
+      return res.json({
+        total_count: data.total_count,
+        workflow_runs: (data.workflow_runs || []).map((run: any) => ({
+          id: run.id,
+          name: run.name,
+          status: run.status,
+          conclusion: run.conclusion,
+          html_url: run.html_url,
+          created_at: run.created_at,
+          updated_at: run.updated_at,
+          run_number: run.run_number,
+          artifacts_url: run.artifacts_url,
+        })),
+      });
+    } catch (err: any) {
+      return res.status(500).json({
+        error: "Failed to fetch GitHub runs",
+        message: err?.message || String(err),
+      });
+    }
+  });
+
+  // API Route: Get GitHub Artifacts for a specific run
+  app.post("/api/github/artifacts", async (req, res) => {
+    try {
+      const { repo, token, runId } = req.body || {};
+      const targetRepo = (repo || process.env.GITHUB_BUILD_REPO || "").trim();
+      const targetToken = (token || process.env.GITHUB_BUILD_TOKEN || "").trim();
+
+      if (!targetRepo || !runId) {
+        return res.status(400).json({ error: "Repo and runId are required" });
+      }
+
+      const headers: Record<string, string> = {
+        Accept: "application/vnd.github.v3+json",
+        "User-Agent": "WebToAPK-Studio-Backend",
+      };
+      if (targetToken) {
+        headers["Authorization"] = `Bearer ${targetToken}`;
+      }
+
+      const artRes = await fetch(
+        `https://api.github.com/repos/${targetRepo}/actions/runs/${runId}/artifacts`,
+        { headers }
+      );
+
+      if (!artRes.ok) {
+        return res.status(artRes.status).json({ error: "Failed to get artifacts" });
+      }
+
+      const data: any = await artRes.json();
+      return res.json({
+        artifacts: (data.artifacts || []).map((art: any) => ({
+          id: art.id,
+          name: art.name,
+          size_in_bytes: art.size_in_bytes,
+          archive_download_url: art.archive_download_url,
+          created_at: art.created_at,
+          expired: art.expired,
+        })),
+      });
+    } catch (err: any) {
+      return res.status(500).json({
+        error: "Failed to fetch artifacts",
         message: err?.message || String(err),
       });
     }

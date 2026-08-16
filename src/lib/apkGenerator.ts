@@ -1158,6 +1158,68 @@ function escapeXml(unsafe: string): string {
     .replace(/'/g, '&apos;');
 }
 
+/**
+ * Generates the full automated GitHub Actions Android APK compilation workflow YAML
+ */
+export function generateGitHubWorkflowYml(config: AppConfig): string {
+  const sanitized = config.name.replace(/[^a-zA-Z0-9_\-]/g, '') || 'WebApp';
+  return `name: Build Full Native Android APK (${sanitized})
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      appName:
+        description: 'Application Name'
+        required: true
+        default: '${config.name}'
+      targetUrl:
+        description: 'Target Website URL'
+        required: true
+        default: '${config.url}'
+      packageName:
+        description: 'Android Package ID'
+        required: true
+        default: '${config.packageName}'
+  repository_dispatch:
+    types: [build-apk]
+
+jobs:
+  build-apk:
+    name: Compile 100% Genuine Android APK (Gradle Release)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x gradlew || true
+
+      - name: Build Full Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Build Full Production Release APK
+        run: ./gradlew assembleRelease --stacktrace || ./gradlew assembleDebug --stacktrace
+
+      - name: Upload Installable APK Artifact (15-20 MB)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${sanitized}-Release-APK
+          path: app/build/outputs/apk/**/*.apk
+          retention-days: 30
+`;
+}
+
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+

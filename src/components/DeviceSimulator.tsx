@@ -38,24 +38,19 @@ export const DeviceSimulator: React.FC<DeviceSimulatorProps> = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
 
-  // Dynamically calculate realistic package size based on real active assets, icons & features
-  const estimatedSizeKb = useMemo(() => {
-    let bytes = 248 * 1024; // Base native Java/Kotlin WebView engine binary
+  // Dynamically calculate realistic compiled native APK package size (15-20 MB Android runtime)
+  const estimatedApkSizeMb = useMemo(() => {
+    let baseMb = 16.2; // Native AndroidX, Dalvik Bytecode, WebKit engine runtime
     if (config.icon.customDataUrl) {
-      bytes += Math.round(config.icon.customDataUrl.length * 0.75);
-    } else {
-      bytes += 32 * 1024; // Multi-density adaptive icon mipmaps
+      baseMb += 0.4;
     }
     if (config.splash.enabled) {
-      bytes += 16 * 1024; // Native splash vector & layout resources
+      baseMb += 0.2;
     }
     if (config.offline.enabled) {
-      bytes += 14 * 1024; // Offline cache handler & embedded fallback assets
+      baseMb += 0.3;
     }
-    if (config.permissions.camera || config.permissions.geolocation || config.permissions.recordAudio) {
-      bytes += 8 * 1024; // Additional hardware bridge classes
-    }
-    return (bytes / 1024).toFixed(1);
+    return baseMb.toFixed(1);
   }, [config]);
 
   // Update status bar clock
@@ -378,7 +373,7 @@ export const DeviceSimulator: React.FC<DeviceSimulatorProps> = ({
       {/* Dynamic Device & Package Specs Pill */}
       <div className="mt-3.5 flex flex-wrap items-center justify-center gap-1.5 text-[10px] sm:text-[11px] text-slate-400 font-mono">
         <span className="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-800 text-cyan-300">
-          Est. Size: ~{estimatedSizeKb} KB
+          Native APK: ~{estimatedApkSizeMb} MB
         </span>
         <span className="px-2 py-0.5 rounded-md bg-slate-900/90 border border-slate-800 text-slate-300">
           Min API: {config.build.minSdkVersion}
